@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-10
 
-**Status**: Draft
+**Status**: Complete — implementada y verificada en producción el 2026-11-10 (ver `verification.md`)
 
 **Input**: User description: "En la página de asesor necesito implementar otra cosa, que sea el panel administrativo del catálogo digital. Y la tarjeta la necesito en .png con estilo profesional, minimalista. Usa 21st para crear la tarjeta y todo."
 
