@@ -4,6 +4,7 @@ import { PALETTES } from '../data/palettes';
 import { Navbar } from './Navbar';
 import { CatalogView } from './CatalogView';
 import { CardStudio } from './CardStudio';
+import { AdminPanel } from './admin/AdminPanel';
 import { ProductDetailModal } from './ProductDetailModal';
 import { ProductFormModal } from './ProductFormModal';
 import { DigitalCardModal } from './DigitalCardModal';
@@ -48,7 +49,9 @@ export const AdvisorDashboard: React.FC<AdvisorDashboardProps> = ({
   } = useCatalogData();
 
   // UI state
-  const [currentView, setCurrentView] = useState<'catalog' | 'card-studio'>('catalog');
+  const [currentView, setCurrentView] = useState<
+    'catalog' | 'card-studio' | 'panel'
+  >('catalog');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isDigitalCardOpen, setIsDigitalCardOpen] = useState(false);
   const [isCommissionModalOpen, setIsCommissionModalOpen] = useState(false);
@@ -168,6 +171,14 @@ export const AdvisorDashboard: React.FC<AdvisorDashboardProps> = ({
             onOpenCardStudio={() => setCurrentView('card-studio')}
             onOpenDigitalCard={() => setIsDigitalCardOpen(true)}
             onOpenAddProduct={() => setIsAddProductOpen(true)}
+          />
+        ) : currentView === 'panel' ? (
+          <AdminPanel
+            products={products}
+            advisorSettings={advisorSettings}
+            onOpenAddProduct={() => setIsAddProductOpen(true)}
+            onEditProduct={handleEditProduct}
+            onDeleteProduct={handleRequestDelete}
           />
         ) : (
           <CardStudio

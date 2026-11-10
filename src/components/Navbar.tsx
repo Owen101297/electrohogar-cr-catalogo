@@ -6,12 +6,13 @@ import {
   Calculator, 
   Smartphone, 
   Phone, 
-  MessageCircle
+  MessageCircle,
+  LayoutDashboard
 } from 'lucide-react';
 
 interface NavbarProps {
-  currentView: 'catalog' | 'card-studio';
-  onSelectView: (view: 'catalog' | 'card-studio') => void;
+  currentView: 'catalog' | 'card-studio' | 'panel';
+  onSelectView: (view: 'catalog' | 'card-studio' | 'panel') => void;
   profile: CardProfile;
   activePalette: ColorPalette;
   advisorSettings: AdvisorSettings;
@@ -105,6 +106,20 @@ export const Navbar: React.FC<NavbarProps> = ({
             <ShoppingBag className="w-4 h-4" />
             <span className="hidden sm:inline">Catálogo</span>
             <span className="sm:hidden">Productos</span>
+          </button>
+
+          <button
+            onClick={() => onSelectView('panel')}
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition cursor-pointer ${
+              currentView === 'panel'
+                ? 'bg-white text-[#0F4C81] shadow-xs'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+            title="Panel administrativo del catálogo"
+          >
+            <LayoutDashboard className="w-4 h-4 text-emerald-600" />
+            <span className="hidden lg:inline">Panel</span>
+            <span className="lg:hidden">Métricas</span>
           </button>
 
           <button
