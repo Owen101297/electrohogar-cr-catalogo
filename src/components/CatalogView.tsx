@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Product, CardProfile, ColorPalette, AdvisorSettings } from '../types';
 import { CATEGORIES } from '../data/initialProducts';
 import { formatColones, generateWhatsAppLink, calculateCommission } from '../utils/formatters';
+import { PRODUCT_COPY } from '../utils/products';
 import { 
   Search, 
   MessageCircle, 
@@ -15,7 +16,8 @@ import {
   PlusCircle,
   HelpCircle,
   ArrowUpRight,
-  CheckCircle2
+  CheckCircle2,
+  ShoppingBag
 } from 'lucide-react';
 
 interface CatalogViewProps {
@@ -261,25 +263,44 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
 
       {/* Product Grid */}
       {filteredProducts.length === 0 ? (
-        <div className="bg-white rounded-3xl p-12 text-center border border-gray-200 space-y-3">
-          <HelpCircle className="w-12 h-12 text-gray-300 mx-auto" />
-          <h3 className="text-base font-bold text-gray-800">
-            No se encontraron productos con estos criterios
-          </h3>
-          <p className="text-xs text-gray-500 max-w-md mx-auto">
-            Prueba buscando con otro término o seleccionando "Todas las Tiendas".
-          </p>
-          <button
-            onClick={() => {
-              setSelectedCategory('todas');
-              setSelectedStore('Todas');
-              setSearchQuery('');
-            }}
-            className="px-4 py-2 bg-[#0F4C81] text-white text-xs font-bold rounded-xl cursor-pointer"
-          >
-            Ver Todos los Productos
-          </button>
-        </div>
+        products.length === 0 ? (
+          /* Catálogo completamente vacío: la asesora aún no capturó productos */
+          <div className="bg-white rounded-3xl p-12 text-center border border-gray-200 space-y-3">
+            <ShoppingBag className="w-12 h-12 text-gray-300 mx-auto" />
+            <h3 className="text-base font-bold text-gray-800">
+              {PRODUCT_COPY.emptyCatalog.title}
+            </h3>
+            <p className="text-xs text-gray-500 max-w-md mx-auto">
+              {PRODUCT_COPY.emptyCatalog.body}
+            </p>
+            <button
+              onClick={onOpenAddProduct}
+              className="px-4 py-2 bg-[#0F4C81] text-white text-xs font-bold rounded-xl cursor-pointer"
+            >
+              {PRODUCT_COPY.emptyCatalog.action}
+            </button>
+          </div>
+        ) : (
+          <div className="bg-white rounded-3xl p-12 text-center border border-gray-200 space-y-3">
+            <HelpCircle className="w-12 h-12 text-gray-300 mx-auto" />
+            <h3 className="text-base font-bold text-gray-800">
+              No se encontraron productos con estos criterios
+            </h3>
+            <p className="text-xs text-gray-500 max-w-md mx-auto">
+              Prueba buscando con otro término o seleccionando "Todas las Tiendas".
+            </p>
+            <button
+              onClick={() => {
+                setSelectedCategory('todas');
+                setSelectedStore('Todas');
+                setSearchQuery('');
+              }}
+              className="px-4 py-2 bg-[#0F4C81] text-white text-xs font-bold rounded-xl cursor-pointer"
+            >
+              Ver Todos los Productos
+            </button>
+          </div>
+        )
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
           {filteredProducts.map((product) => {

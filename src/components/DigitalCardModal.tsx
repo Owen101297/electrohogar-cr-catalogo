@@ -47,6 +47,7 @@ export const DigitalCardModal: React.FC<DigitalCardModalProps> = ({
         {/* Close Button */}
         <button
           onClick={onClose}
+          aria-label="Cerrar"
           className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition cursor-pointer"
         >
           <X className="w-4 h-4" />
