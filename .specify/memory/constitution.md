@@ -24,7 +24,7 @@ contrato de producto: agregar o renombrar una paleta obliga a actualizar `src/da
 los consumidores de `paletteId`.
 
 ### IV. Tipado Estricto y Verificación Antes de Commit
-El proyecto compila en modo estricto de TypeScript. Cada cambio MUST pasar `bun run lint`
+El proyecto compila en modo estricto de TypeScript. Cada cambio MUST pasar `npm run lint`
 (`tsc --noEmit`) sin errores antes de commitearse. No se usan `any` implícitos ni casts de
 `unknown` sin justificación; los `any` ya presentes en los `select` de ordenamiento se consideran
 deuda técnica a eliminar, no un patrón a replicar. Los componentes reciben props tipadas mediante
@@ -40,8 +40,11 @@ moneda, los enlaces de WhatsApp y el cálculo de comisión se resuelven SIEMPRE 
 
 - **Runtime:** React 19 + TypeScript 7 + Vite 8, Tailwind CSS v4 (plugin `@tailwindcss/vite`),
   iconografía `lucide-react`, animaciones `motion`.
-- **Gestor de paquetes:** Bun (`bun.lock` presente). Comandos disponibles: `bun run dev`
-  (puerto 3000, host 0.0.0.0), `bun run build`, `bun run preview`, `bun run lint`.
+- **Gestor de paquetes:** el repo trae `bun.lock` (Bun), pero **Bun no está instalado** en la máquina
+  de desarrollo: se usa **npm**. Comandos: `npm run dev` (puerto 3000, host 0.0.0.0), `npm run build`,
+  `npm run preview`, `npm run lint`. `npm install` requiere `--legacy-peer-deps` (conflicto de peer
+  `esbuild` entre `tsx` y `vite@8`). No se commitea `package-lock.json`: la fuente de verdad de
+  dependencias es `bun.lock`.
 - **Sin backend propio:** no se agregan endpoints, base de datos ni autenticación sin una
   especificación que lo justifique.
 - **Sin PII de personas naturales:** el producto es una tarjeta *corporativa*. Los perfiles
@@ -59,7 +62,7 @@ moneda, los enlaces de WhatsApp y el cálculo de comisión se resuelven SIEMPRE 
 2. Antes de implementar: `/speckit.plan` → `/speckit.tasks` → `/speckit.implement`.
 3. `/speckit.clarify` se usa cuando la spec tenga ambigüedad; `/speckit.analyze` cuando haya
    cambios de contrato o de tipos.
-4. Cada commit debe dejar el repo en estado verde (`bun run lint` sin errores).
+4. Cada commit debe dejar el repo en estado verde (`npm run lint` sin errores).
 5. Las decisiones de arquitectura que afecten esta constitución se documentan en
    `.specify/memory/constitution.md` mediante una enmienda versionada.
 
