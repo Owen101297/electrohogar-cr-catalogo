@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CardProfile, ColorPalette } from '../types';
 import { PALETTES } from '../data/palettes';
 import { QRCodeRenderer } from './QRCodeRenderer';
@@ -36,6 +36,12 @@ export const CardStudio: React.FC<CardStudioProps> = ({
   const [isFlipped, setIsFlipped] = useState(false);
   const [qrUrlCustom, setQrUrlCustom] = useState(catalogUrl);
 
+  // El destino del QR es siempre la URL pública del catálogo. Si cambia, la
+  // vista previa se actualiza sola.
+  useEffect(() => {
+    setQrUrlCustom(catalogUrl);
+  }, [catalogUrl]);
+
   const handlePrint = () => {
     window.print();
   };
@@ -62,10 +68,10 @@ export const CardStudio: React.FC<CardStudioProps> = ({
           <div className="flex flex-wrap items-center gap-3 mt-5">
             <button
               onClick={handlePrint}
-              className="inline-flex items-center gap-2 bg-[#EAB308] hover:bg-[#ca9a07] text-[#121c27] font-extrabold px-5 py-2.5 rounded-xl shadow-md transition-all text-sm cursor-pointer"
+              className="inline-flex items-center gap-2 bg-[#EAB308] hover:bg-[#ca9a07] text-[#121c27] font-extrabold px-6 py-3.5 rounded-xl shadow-md transition-all text-sm cursor-pointer"
             >
-              <Printer className="w-4 h-4" />
-              Imprimir Hojas de Tarjetas (8x)
+              <Printer className="w-5 h-5" />
+              Imprimir Hoja de Tarjetas (8x)
             </button>
             <button
               onClick={onOpenDigitalCard}
@@ -74,6 +80,26 @@ export const CardStudio: React.FC<CardStudioProps> = ({
               <Smartphone className="w-4 h-4" />
               Ver Tarjeta Digital
             </button>
+          </div>
+
+          {/* Instrucciones de impresión: la tarjeta queda lista para imprenta o para imprimir en casa */}
+          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-blue-200/90">
+            <span className="inline-flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+              Papel A4 horizontal
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+              Márgenes: ninguno
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+              Activar gráficos de fondo
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+              8 tarjetas con marcas de corte
+            </span>
           </div>
         </div>
       </div>
@@ -411,9 +437,9 @@ export const CardStudio: React.FC<CardStudioProps> = ({
 
               <button
                 onClick={handlePrint}
-                className="inline-flex items-center gap-2 bg-[#0F4C81] hover:bg-[#082a47] text-white font-bold px-4 py-2 rounded-xl text-xs shadow-xs transition cursor-pointer"
+                className="inline-flex items-center gap-2 bg-[#0F4C81] hover:bg-[#082a47] text-white font-bold px-5 py-3 rounded-xl text-sm shadow-xs transition cursor-pointer"
               >
-                <Printer className="w-3.5 h-3.5" />
+                <Printer className="w-4 h-4" />
                 Imprimir Hoja (8x Tarjetas)
               </button>
             </div>
