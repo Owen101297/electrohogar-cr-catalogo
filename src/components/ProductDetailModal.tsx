@@ -10,12 +10,16 @@ import {
   CreditCard,
   Building2,
   Info,
-  DollarSign
+  DollarSign,
+  Pencil,
+  Trash2
 } from 'lucide-react';
 
 interface ProductDetailModalProps {
   product: Product | null;
   onClose: () => void;
+  onEditProduct: (product: Product) => void;
+  onDeleteProduct: (product: Product) => void;
   profile: CardProfile;
   activePalette: ColorPalette;
   advisorSettings: AdvisorSettings;
@@ -24,12 +28,13 @@ interface ProductDetailModalProps {
 export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   product,
   onClose,
+  onEditProduct,
+  onDeleteProduct,
   profile,
   activePalette,
   advisorSettings,
 }) => {
   const [paymentMode, setPaymentMode] = useState<'contado' | 'quincenal' | 'mensual'>('quincenal');
-  const [selectedTermMonths, setSelectedTermMonths] = useState<number>(24);
 
   if (!product) return null;
 
@@ -37,11 +42,28 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   const monthlyInstallment = Math.round(product.installmentQuincenal * 2);
   const advisorCommission = calculateCommission(product.currentPrice, advisorSettings.commissionRate);
 
+  // El plazo y la cuota mostrados son los reales del producto (FR-011).
+  const termMonths = product.installmentMonths;
+
+  // Monto que se envía a WhatsApp según la modalidad elegida.
+  const amountForWhatsApp =
+    paymentMode === 'quincenal'
+      ? product.installmentQuincenal
+      : paymentMode === 'mensual'
+        ? monthlyInstallment
+        : product.currentPrice;
+
+  // El enlace de WhatsApp lleva el monto según la modalidad elegida:
+  // contado ⇒ precio de contado sin cuota; quincenal/mensual ⇒ el precio de
+  // contado más la cuota correspondiente.
+  const installmentForWhatsApp =
+    paymentMode === 'contado' ? undefined : amountForWhatsApp;
+
   const whatsAppUrl = generateWhatsAppLink(
     profile.phone,
     product.name,
     product.currentPrice,
-    paymentMode === 'quincenal' ? product.installmentQuincenal : monthlyInstallment,
+    installmentForWhatsApp,
     product.store,
     product.sku
   );
@@ -52,6 +74,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         {/* Close Button */}
         <button
           onClick={onClose}
+          aria-label="Cerrar"
           className="absolute top-4 right-4 z-20 w-9 h-9 rounded-full bg-white/90 hover:bg-white text-gray-700 shadow-md flex items-center justify-center transition cursor-pointer"
         >
           <X className="w-5 h-5" />
@@ -208,7 +231,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     </span>
                   </div>
                   <span className="text-[11px] text-gray-500 font-medium">
-                    A {selectedTermMonths} meses plazo
+                    A {termMonths} {termMonths === 1 ? 'mes' : 'meses'} plazo
                   </span>
                 </div>
               )}
@@ -284,6 +307,26 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               <p className="text-[11px] text-center text-gray-400 mt-1.5">
                 Se enviará un mensaje pre-llenado con este producto a WhatsApp: +506 {profile.phone}
               </p>
+            </div>
+
+            {/* Gestión del producto: editar y eliminar */}
+            <div className="grid grid-cols-2 gap-2 pt-3 border-t border-gray-100">
+              <button
+                type="button"
+                onClick={() => onEditProduct(product)}
+                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-[#0F4C81]/30 bg-blue-50/60 hover:bg-blue-100 text-[#0F4C81] font-bold text-xs transition cursor-pointer"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                Editar producto
+              </button>
+              <button
+                type="button"
+                onClick={() => onDeleteProduct(product)}
+                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-red-200 bg-red-50/60 hover:bg-red-100 text-red-700 font-bold text-xs transition cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Eliminar producto
+              </button>
             </div>
           </div>
         </div>

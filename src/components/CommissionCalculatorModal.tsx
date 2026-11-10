@@ -47,6 +47,7 @@ export const CommissionCalculatorModal: React.FC<CommissionCalculatorModalProps>
         <div className="bg-gradient-to-r from-[#0F4C81] to-[#041524] text-white p-6 relative">
           <button
             onClick={onClose}
+            aria-label="Cerrar"
             className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition cursor-pointer"
           >
             <X className="w-4 h-4" />
