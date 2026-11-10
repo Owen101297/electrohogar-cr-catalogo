@@ -1,0 +1,6 @@
+{
+  "name": "ElectroHogar Costa Rica - Catálogo & Tarjetas",
+  "description": "Tu asesor de confianza en electrodomésticos de Gollo y EPA en Costa Rica. Catálogo exclusivo con cuotas, garantía de fábrica y asesoría personalizada puerta a puerta.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

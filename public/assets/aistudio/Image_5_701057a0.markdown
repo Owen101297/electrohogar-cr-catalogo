@@ -1,0 +1,217 @@
+---
+name: ElectroHogar Confiable
+colors:
+  surface: '#f7f9ff'
+  surface-dim: '#d1dbea'
+  surface-bright: '#f7f9ff'
+  surface-container-lowest: '#ffffff'
+  surface-container-low: '#eef4ff'
+  surface-container: '#e4effe'
+  surface-container-high: '#dfe9f8'
+  surface-container-highest: '#d9e3f2'
+  on-surface: '#121c27'
+  on-surface-variant: '#42474f'
+  inverse-surface: '#27313c'
+  inverse-on-surface: '#e9f1ff'
+  outline: '#727780'
+  outline-variant: '#c2c7d1'
+  surface-tint: '#2d6197'
+  primary: '#00355f'
+  on-primary: '#ffffff'
+  primary-container: '#0f4c81'
+  on-primary-container: '#8ebdf9'
+  inverse-primary: '#a0c9ff'
+  secondary: '#785a00'
+  on-secondary: '#ffffff'
+  secondary-container: '#fdc425'
+  on-secondary-container: '#6d5200'
+  tertiary: '#003c17'
+  on-tertiary: '#ffffff'
+  tertiary-container: '#005624'
+  on-tertiary-container: '#27d467'
+  error: '#ba1a1a'
+  on-error: '#ffffff'
+  error-container: '#ffdad6'
+  on-error-container: '#93000a'
+  primary-fixed: '#d2e4ff'
+  primary-fixed-dim: '#a0c9ff'
+  on-primary-fixed: '#001c37'
+  on-primary-fixed-variant: '#07497d'
+  secondary-fixed: '#ffdf9a'
+  secondary-fixed-dim: '#f7be1d'
+  on-secondary-fixed: '#251a00'
+  on-secondary-fixed-variant: '#5a4300'
+  tertiary-fixed: '#66ff8e'
+  tertiary-fixed-dim: '#3de273'
+  on-tertiary-fixed: '#002109'
+  on-tertiary-fixed-variant: '#005322'
+  background: '#f7f9ff'
+  on-background: '#121c27'
+  surface-variant: '#d9e3f2'
+  promo-amber: '#F59E0B'
+  retail-red: '#DF2421'
+  surface-canvas: '#F4F6F8'
+  surface-card: '#FFFFFF'
+  border-subtle: '#DFE3E8'
+typography:
+  display-lg:
+    fontFamily: Montserrat
+    fontSize: 40px
+    fontWeight: '800'
+    lineHeight: 48px
+    letterSpacing: -0.02em
+  display-mobile:
+    fontFamily: Montserrat
+    fontSize: 30px
+    fontWeight: '800'
+    lineHeight: 36px
+    letterSpacing: -0.01em
+  headline-lg:
+    fontFamily: Montserrat
+    fontSize: 28px
+    fontWeight: '700'
+    lineHeight: 34px
+  headline-md:
+    fontFamily: Montserrat
+    fontSize: 22px
+    fontWeight: '700'
+    lineHeight: 28px
+  headline-sm:
+    fontFamily: Montserrat
+    fontSize: 18px
+    fontWeight: '600'
+    lineHeight: 24px
+  price-headline:
+    fontFamily: Montserrat
+    fontSize: 24px
+    fontWeight: '800'
+    lineHeight: 28px
+    letterSpacing: -0.01em
+  price-installment:
+    fontFamily: Montserrat
+    fontSize: 16px
+    fontWeight: '700'
+    lineHeight: 20px
+  body-lg:
+    fontFamily: Inter
+    fontSize: 16px
+    fontWeight: '400'
+    lineHeight: 24px
+  body-md:
+    fontFamily: Inter
+    fontSize: 14px
+    fontWeight: '400'
+    lineHeight: 20px
+  body-sm:
+    fontFamily: Inter
+    fontSize: 12px
+    fontWeight: '400'
+    lineHeight: 16px
+  label-lg:
+    fontFamily: Inter
+    fontSize: 14px
+    fontWeight: '600'
+    lineHeight: 18px
+    letterSpacing: 0.01em
+  label-md:
+    fontFamily: Inter
+    fontSize: 12px
+    fontWeight: '600'
+    lineHeight: 16px
+  label-tag:
+    fontFamily: Montserrat
+    fontSize: 11px
+    fontWeight: '800'
+    lineHeight: 14px
+    letterSpacing: 0.04em
+rounded:
+  sm: 0.25rem
+  DEFAULT: 0.5rem
+  md: 0.75rem
+  lg: 1rem
+  xl: 1.5rem
+  full: 9999px
+spacing:
+  gutter: 1rem
+  gutter-mobile: 0.75rem
+  margin: 1.5rem
+  margin-mobile: 1rem
+  space-xs: 0.25rem
+  space-sm: 0.5rem
+  space-md: 1rem
+  space-lg: 1.5rem
+  space-xl: 2rem
+---
+
+## Brand & Style
+
+The design system establishes a direct, authoritative, and deeply practical direct-selling retail experience tailored for the Costa Rican home goods market. It blends the structural reliability of trusted local institutions with the friction-free immediacy required for door-to-door sales consultants presenting catalogs on mobile devices and tablets under direct sunlight.
+
+The design movement is **Corporate / Modern** anchored in high-clarity retail functionality. It balances institutional safety with promotional urgency:
+- **Trust & Authority:** Grounded in deep sapphire blue to evoke commercial longevity, formal guarantees, and installment credit credibility.
+- **Retail Vigor:** Dynamic promotional gold accents signal hot offers, discounts, and clear financing tags without visual clutter.
+- **Conversational Commerce:** Integrated high-contrast messaging cues prioritize rapid closing loops via WhatsApp.
+- **Field Ergonomics:** High touch targets, strong contrast ratios, and scannable visual anchors optimized for quick street-level consultations.
+
+## Colors
+
+The color architecture communicates financial stability, retail excitement, and rapid conversion pathways:
+
+- **Primary (`#0F4C81`)**: Deep sapphire blue representing the institutional anchor. Applied to primary brand headers, navigation bars, top-level status bars, active states, and core category tags.
+- **Secondary (`#EAB308`)**: Vibrant retail gold. Reserved exclusively for high-impact promotional markers: discount percentages, flash offers, installment badges (*"Cuotas desde"*), and attention-grabbing chips.
+- **Tertiary (`#25D366`)**: Direct sales engine green. Strictly reserved for real-time contact touchpoints, direct checkout inquiries, quote requests, and floating consultation triggers.
+- **Neutral (`#212B36`)**: High-legibility slate charcoal for primary product names, specifications, and colón currency values. Never use pure `#000000` for body typography to maintain visual softness against white backdrops.
+- **Semantic Accents**:
+  - `promo-amber` (`#F59E0B`): Used for secondary retail tags, ratings, and warranty banners.
+  - `retail-red` (`#DF2421`): Applied strictly to urgency timers, clearance tags (*"Liquidación"*), and error/out-of-stock validation.
+  - `surface-canvas` (`#F4F6F8`): Crisp background layer that isolates product photography.
+
+## Typography
+
+The typographic hierarchy pairs the structured geometric impact of **Montserrat** with the systematic, ultra-legible clarity of **Inter**:
+
+- **Headlines & Financial Impact (Montserrat)**: Delivers punchy retail presence. High-weight Montserrat is deployed specifically for product nomenclature, promotional hero statements, and price figures in colones (`₡`). Large numbers must stand out immediately when tilting the phone toward a customer.
+- **Narrative & Specifications (Inter)**: Handles descriptive details, capacity metrics, technical specifications, and warranty disclaimers with zero ambiguity.
+- **Currency Presentation**: The Costa Rican Colón symbol (`₡`) shares the identical weight and size of the adjoining integer. It is never superscripted or subdued. Strikethrough cash prices are rendered in medium gray alongside bright primary credit rates.
+
+## Layout & Spacing
+
+The layout system is tailored primarily for handheld mobile screens (360px–430px wide) used by sales advisors, scaling cleanly to tablets (768px–1024px) for side-by-side presentation.
+
+- **Grid Model**: A fluid 4-column system on mobile devices, transitioning to an 8-column layout on tablets and 12 columns on desktop admin views.
+- **Touch-First Tap Targets**: Elements intended for advisor or customer interaction strictly maintain a minimum vertical clearance of 48px to prevent mis-taps during in-person presentations.
+- **Catalog Density**: Product listing views employ a compact two-column card layout on mobile (`gutter-mobile: 0.75rem`), shifting to full-width horizontal presentation cards during deep-dive detail views.
+
+## Elevation & Depth
+
+Visual hierarchy uses crisp ambient separation rather than heavy skeuomorphic shading, guaranteeing clarity in high-glare environments:
+
+- **Surface Tiers**: Base canvas rests at `#F4F6F8`. White product cards (`#FFFFFF`) sit on top with a hairline border (`1px solid #DFE3E8`) paired with an ultra-soft ambient shadow (`0 2px 8px rgba(15, 76, 129, 0.06)`).
+- **Interactive Depth**: Elevated elements like the floating inquiry button and promotional sheets utilize a focused direct drop shadow (`0 8px 24px rgba(15, 76, 129, 0.16)`).
+- **Modal Sheets**: Bottom drawer sheets (used for financing calculators and technical comparisons) introduce an 80% opacity neutral backdrop overlay (`#212B36CC`) with an immediate physical presence.
+
+## Shapes
+
+The roundedness factor of `2` provides a balanced, approachable profile (8px default radius) that balances modern software aesthetics with durable hardware retail styling.
+
+- **Standard Elements (0.5rem / 8px)**: Applied to input controls, secondary buttons, product cards, and installment calculator modules.
+- **Promotional Badges (0.25rem / 4px)**: Applied to sale percentage stickers and specification chips for a sharper, crisp paper-tag feel.
+- **Action Triggers & Floats (Full Pill / 9999px)**: Reserved for floating action buttons (WhatsApp quick-quote triggers) and main conversion pills to create clear affordance contrast against square product cards.
+
+## Components
+
+### Product Cards
+- **Structure**: Vertical arrangement featuring an isolated white photography canvas, dynamic upper-left tag row, upper-right guarantee pill, product title in Montserrat (`headline-sm`), cash price, and emphasized monthly installment calculation.
+- **Promotional Badges**: Background in `secondary_color_hex` (`#EAB308`) or `retail-red` (`#DF2421`) with crisp white or dark neutral text, showcasing `-30% OFF` or `PREVENTA`.
+
+### Buttons & Interactive Controls
+- **Direct WhatsApp Action**: Solid `#25D366` surface with high-contrast `#FFFFFF` text and accompanying icon. Full-width on mobile with an 8px border radius.
+- **Primary Retail Action**: Solid `#0F4C81` surface with white text for technical sheet downloads or cart reservations.
+- **Financing Toggle**: Segmented pill controls allowing sales agents to alternate between "Contado" (Cash) and "Cuotas Quincenales / Mensuales" (Bi-weekly / Monthly installments).
+
+### Catalog Inputs & Filtration
+- **Field Search**: High-contrast white input field with an inner `#0F4C81` search icon, 48px height, and clear filter chips beneath for major home categories: *Refrigeración*, *Lavado*, *Cocina*, *Audio/Video*.
+- **Quick Filters**: Horizontal scrolling chip container with active chips highlighted in deep sapphire with white typography.
+
+### Floating Action Trigger
+- **Field Selling Floating Button**: Fixed pill at the bottom-right corner (or pinned bottom bar on mobile screens) featuring the WhatsApp icon and bold label: *"Cotizar por WhatsApp"*. Elevated with depth tier to remain visibly dominant over catalog content.
