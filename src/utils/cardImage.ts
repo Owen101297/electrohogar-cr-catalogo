@@ -5,6 +5,10 @@
  * se ve en pantalla es exactamente lo que se descarga (FR-019). Se dibuja a
  * 300 DPI para que el PNG sirva para imprenta.
  *
+ * Diseño: corporate de alto contraste. Frente con degradado de marca, curva
+ * dorada y bloque orgánico de acento; reverso partido en bloque de marca con
+ * el QR y bloque de datos con iconos circulares.
+ *
  * Contrato: specs/004-panel-admin-tarjeta-png/contracts/card-image.md
  */
 
@@ -36,7 +40,7 @@ export const SHEET_MARGIN_PX = 20;
 /** Ancho de la hoja completa. */
 export const SHEET_WIDTH_PX = SHEET_COLUMNS * CARD_WIDTH_PX + (SHEET_COLUMNS - 1) * SHEET_GAP_PX + SHEET_MARGIN_PX * 2; // 2088
 /** Alto de la hoja completa. */
-export const SHEET_HEIGHT_PX = SHEET_ROWS * CARD_HEIGHT_PX + (SHEET_ROWS - 1) * SHEET_GAP_PX + SHEET_MARGIN_PX * 2; // 2632
+export const SHEET_HEIGHT_PX = SHEET_ROWS * CARD_HEIGHT_PX + (SHEET_ROWS - 1) * SHEET_GAP_PX + SHEET_MARGIN_PX * 2; // 2712
 
 export type CardSide = 'front' | 'back';
 
@@ -47,6 +51,8 @@ export interface CardRenderOptions {
   slogan: string;
   phone: string;
   coverage: string;
+  /** URL pública del catálogo, impresa en el reverso. */
+  website: string;
   /** PNG en base64 del código QR. Cadena vacía si no está disponible. */
   qrDataUrl: string;
   palette: ColorPalette;
@@ -60,6 +66,9 @@ export const CARD_FILENAMES = {
 
 const FONT_HEADING = "'Montserrat', 'Inter', sans-serif";
 const FONT_BODY = "'Inter', 'Montserrat', sans-serif";
+
+/** Negro del bloque de datos del reverso. */
+const INK = '#141414';
 
 /** Ajusta el contexto al tamaño del lienzo y aplica el escalado. */
 function prepareContext(
@@ -105,46 +114,36 @@ function drawLine(
 }
 
 /**
- * Dibuja el monograma de la marca.
- *
- * "ElectroHogar Costa Rica" produce "EH" — las iniciales de las partes de la
- * primera palabra separadas por camelCase —, igual que el logotipo de la app.
+ * Dibuja texto espaciado entre letras (letter-spacing), que es lo que da el
+ * aire de marca del diseño de referencia.
  */
-function drawLogoMark(
+function drawTracked(
   ctx: CanvasRenderingContext2D,
-  options: CardRenderOptions,
+  text: string,
   x: number,
   y: number,
-  size: number
+  spacing: number,
+  options: { font: string; color: string; align?: CanvasTextAlign }
 ): void {
-  const words = options.brandName.split(/\s+/).filter(Boolean);
-  const first = words[0] ?? '';
-
-  // Se separa por camelCase: "ElectroHogar" -> ["Electro", "Hogar"].
-  const parts = first
-    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-    .split(/\s+/)
-    .filter(Boolean);
-
-  let initials: string;
-  if (parts.length >= 2) {
-    initials = (parts[0][0] + parts[1][0]).toUpperCase();
-  } else if (first.length >= 2) {
-    initials = first.slice(0, 2).toUpperCase();
-  } else {
-    initials = ((first + (words[1]?.[0] ?? '')).slice(0, 2) || 'EH').toUpperCase();
-  }
-
   ctx.save();
-  ctx.fillStyle = options.palette.secondary;
-  roundRect(ctx, x, y, size, size, size * 0.22);
-  ctx.fill();
+  ctx.font = options.font;
+  ctx.fillStyle = options.color;
+  ctx.textBaseline = 'alphabetic';
 
-  ctx.fillStyle = options.palette.primaryDark;
-  ctx.font = `900 ${size * 0.42}px ${FONT_HEADING}`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(initials, x + size / 2, y + size / 2 + size * 0.02);
+  const chars = [...text];
+  const widths = chars.map((c) => ctx.measureText(c).width);
+  const total =
+    widths.reduce((sum, w) => sum + w, 0) + spacing * Math.max(0, chars.length - 1);
+
+  let cursor = x;
+  if (options.align === 'center') cursor = x - total / 2;
+  if (options.align === 'right') cursor = x - total;
+
+  ctx.textAlign = 'left';
+  chars.forEach((char, index) => {
+    ctx.fillText(char, cursor, y);
+    cursor += widths[index] + spacing;
+  });
   ctx.restore();
 }
 
@@ -168,6 +167,69 @@ function roundRect(
   ctx.lineTo(x, y + r);
   ctx.quadraticCurveTo(x, y, x + r, y);
   ctx.closePath();
+}
+
+/**
+ * Traza una curva orgánica (tipo "blob") usando curvas cuadráticas.
+ * `points` son pares [x, y] normalizados (0..1) sobre el ancho y alto dados.
+ */
+function drawBlob(
+  ctx: CanvasRenderingContext2D,
+  originX: number,
+  originY: number,
+  width: number,
+  height: number,
+  points: Array<[number, number]>
+): void {
+  const p = points.map(([px, py]) => [originX + px * width, originY + py * height]);
+  ctx.beginPath();
+  ctx.moveTo(p[0][0], p[0][1]);
+  for (let i = 0; i < p.length; i += 1) {
+    const current = p[i];
+    const next = p[(i + 1) % p.length];
+    const midX = (current[0] + next[0]) / 2;
+    const midY = (current[1] + next[1]) / 2;
+    ctx.quadraticCurveTo(current[0], current[1], midX, midY);
+  }
+  ctx.closePath();
+}
+
+/**
+ * Símbolo de marca: monograma "EH" geométrico construido con dos triángulos,
+ * al estilo del emblema de la referencia.
+ */
+function drawBrandMark(
+  ctx: CanvasRenderingContext2D,
+  options: CardRenderOptions,
+  centerX: number,
+  centerY: number,
+  size: number
+): void {
+  const gold = options.palette.secondary;
+  const half = size / 2;
+
+  // Triángulo izquierdo (apunta hacia arriba)
+  ctx.save();
+  ctx.fillStyle = gold;
+  ctx.beginPath();
+  ctx.moveTo(centerX - half * 0.92, centerY + half * 0.62);
+  ctx.lineTo(centerX - half * 0.28, centerY - half * 0.72);
+  ctx.lineTo(centerX - half * 0.28, centerY + half * 0.62);
+  ctx.closePath();
+  ctx.fill();
+
+  // Triángulo derecho (apunta hacia arriba, más alto)
+  ctx.beginPath();
+  ctx.moveTo(centerX + half * 0.18, centerY + half * 0.62);
+  ctx.lineTo(centerX + half * 0.78, centerY - half * 0.72);
+  ctx.lineTo(centerX + half * 0.78, centerY + half * 0.62);
+  ctx.closePath();
+  ctx.fill();
+
+  // travesaño dorado que une ambos triángulos
+  ctx.fillStyle = gold;
+  ctx.fillRect(centerX - half * 0.28, centerY - half * 0.14, half * 1.06, size * 0.05);
+  ctx.restore();
 }
 
 /** Carga una imagen y la dibuja. Si falla, no lanza. */
@@ -198,6 +260,75 @@ function drawImage(
   });
 }
 
+/** Icono circular dorado con un glifo simple, como los datos de la referencia. */
+function drawDataIcon(
+  ctx: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+  radius: number,
+  kind: 'phone' | 'globe' | 'pin',
+  gold: string
+): void {
+  ctx.save();
+  ctx.strokeStyle = gold;
+  ctx.fillStyle = gold;
+  ctx.lineWidth = Math.max(2, radius * 0.16);
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  if (kind === 'phone') {
+    // Teléfono: handset curvo
+    ctx.beginPath();
+    ctx.moveTo(centerX - radius * 0.42, centerY - radius * 0.5);
+    ctx.quadraticCurveTo(
+      centerX - radius * 0.1,
+      centerY - radius * 0.1,
+      centerX + radius * 0.16,
+      centerY + radius * 0.2
+    );
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(centerX - radius * 0.3, centerY + radius * 0.3, radius * 0.16, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(centerX + radius * 0.34, centerY - radius * 0.34, radius * 0.16, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (kind === 'globe') {
+    // Globo terráqueo
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius * 0.5, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(centerX, centerY, radius * 0.22, radius * 0.5, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(centerX - radius * 0.5, centerY);
+    ctx.lineTo(centerX + radius * 0.5, centerY);
+    ctx.stroke();
+  } else {
+    // Ubicación: marcador
+    ctx.beginPath();
+    ctx.moveTo(centerX, centerY + radius * 0.5);
+    ctx.quadraticCurveTo(
+      centerX - radius * 0.5,
+      centerY - radius * 0.05,
+      centerX,
+      centerY - radius * 0.5
+    );
+    ctx.quadraticCurveTo(
+      centerX + radius * 0.5,
+      centerY - radius * 0.05,
+      centerX,
+      centerY + radius * 0.5
+    );
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(centerX, centerY - radius * 0.12, radius * 0.14, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
 /** Dibuja el anverso: marca, lema y contacto. */
 export async function drawBusinessCard(
   ctx: CanvasRenderingContext2D,
@@ -206,158 +337,259 @@ export async function drawBusinessCard(
 ): Promise<void> {
   const W = CARD_WIDTH_PX;
   const H = CARD_HEIGHT_PX;
+  const gold = options.palette.secondary;
 
   if (side === 'front') {
-    // Fondo con degradado de la marca
-    const gradient = ctx.createLinearGradient(0, 0, W, H);
+    // --- Fondo con degradado de marca ---
+    const gradient = ctx.createLinearGradient(0, 0, W * 0.4, H);
     gradient.addColorStop(0, options.palette.primary);
     gradient.addColorStop(1, options.palette.primaryDark);
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, W, H);
 
-    // Franja de acento
-    ctx.fillStyle = options.palette.secondary;
-    ctx.fillRect(0, 0, W, 14);
+    // --- Bloque orgánico dorado (esquina inferior derecha) ---
+    ctx.save();
+    ctx.fillStyle = gold;
+    drawBlob(ctx, W * 0.76, H * 0.50, W * 0.38, H * 0.62, [
+      [0.2, 0.02],
+      [0.78, 0.0],
+      [1.0, 0.36],
+      [0.9, 0.74],
+      [0.4, 1.0],
+      [0.0, 0.72],
+    ]);
+    ctx.fill();
+    ctx.restore();
 
-    const padding = 56;
+    // --- Curva dorada entrando por la esquina superior izquierda ---
+    ctx.save();
+    ctx.strokeStyle = gold;
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-10, 118);
+    ctx.bezierCurveTo(90, 74, 108, 40, 168, 4);
+    ctx.stroke();
+    ctx.restore();
 
-    // Encabezado
-    drawLine(ctx, 'COSTA RICA 🇨🇷', padding, 74, W - padding * 2, {
-      font: `700 20px ${FONT_BODY}`,
-      color: 'rgba(255,255,255,0.72)',
-    });
-    drawLine(ctx, 'GOLLO • EPA OFICIAL', W - padding, 74, W - padding * 2, {
-      font: `800 20px ${FONT_BODY}`,
-      color: options.palette.secondary,
-      align: 'right',
-    });
+    // --- Símbolo de marca ---
+    const markSize = 104;
+    drawBrandMark(ctx, options, W / 2, 178, markSize);
 
-    // Marca
-    const markSize = 74;
-    drawLogoMark(ctx, options, padding, 118, markSize);
-    drawLine(ctx, options.brandName, padding + markSize + 24, 152, W - padding * 2 - markSize - 24, {
+    // --- Nombre de marca con letter-spacing amplio ---
+    const words = options.brandName.split(/\s+/).filter(Boolean);
+    const headline = words.length > 1 ? words[0] : options.brandName;
+    drawTracked(ctx, headline.toUpperCase(), W / 2, 296, 11, {
       font: `900 46px ${FONT_HEADING}`,
       color: '#FFFFFF',
-    });
-    drawLine(ctx, options.serviceTagline, padding + markSize + 24, 190, W - padding * 2 - markSize - 24, {
-      font: `600 19px ${FONT_BODY}`,
-      color: 'rgba(191,219,254,0.95)',
+      align: 'center',
     });
 
-    // Lema
-    drawLine(ctx, `“${options.slogan}”`, padding, 330, W - padding * 2, {
-      font: `italic 300 22px ${FONT_BODY}`,
-      color: 'rgba(219,234,254,0.9)',
+    // --- Subtítulo con líneas doradas a los lados ---
+    const sub = (words.length > 1 ? words.slice(1).join(' ') : options.serviceTagline)
+      .toUpperCase()
+      .slice(0, 22);
+    ctx.save();
+    ctx.font = `700 17px ${FONT_BODY}`;
+    const subWidth = ctx.measureText(sub).width + 6 * Math.max(0, sub.length - 1);
+    ctx.restore();
+    drawTracked(ctx, sub, W / 2, 334, 6, {
+      font: `700 17px ${FONT_BODY}`,
+      color: gold,
+      align: 'center',
     });
 
-    // Divisor
-    ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+    const lineY = 360;
+    const halfLine = 70;
+    ctx.save();
+    ctx.strokeStyle = gold;
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(padding, H - 168);
-    ctx.lineTo(W - padding, H - 168);
+    ctx.moveTo(W / 2 - halfLine - subWidth / 2 - 20, lineY);
+    ctx.lineTo(W / 2 - subWidth / 2 - 20, lineY);
+    ctx.moveTo(W / 2 + subWidth / 2 + 20, lineY);
+    ctx.lineTo(W / 2 + halfLine + subWidth / 2 + 20, lineY);
     ctx.stroke();
+    ctx.restore();
 
-    // Contacto
-    drawLine(ctx, `WhatsApp: +506 ${options.phone}`, padding, H - 116, W - padding * 2, {
-      font: `800 25px ${FONT_BODY}`,
+    // --- Tagline ---
+    drawLine(ctx, options.serviceTagline, W / 2, 406, 600, {
+      font: `500 19px ${FONT_BODY}`,
+      color: 'rgba(191,219,254,0.95)',
+      align: 'center',
+    });
+
+    // --- Pie: WhatsApp y cobertura a la izquierda ---
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(58, H - 108);
+    ctx.lineTo(700, H - 108);
+    ctx.stroke();
+    ctx.restore();
+
+    drawLine(ctx, `+506 ${options.phone}`, 58, H - 62, 420, {
+      font: `800 24px ${FONT_BODY}`,
       color: options.palette.accentGreen,
     });
-    drawLine(ctx, options.coverage, padding, H - 82, W - padding * 2, {
-      font: `400 19px ${FONT_BODY}`,
+    drawLine(ctx, options.coverage, 58, H - 30, 620, {
+      font: `400 16px ${FONT_BODY}`,
       color: 'rgba(191,219,254,0.9)',
-    });
-    drawLine(ctx, 'Entrega a domicilio', W - padding, H - 82, 300, {
-      font: `800 19px ${FONT_BODY}`,
-      color: options.palette.secondary,
-      align: 'right',
     });
 
     return;
   }
 
-  // ---- Reverso ----
-  ctx.fillStyle = '#FFFFFF';
+  // ================= REVERSO =================
+  // Bloque izquierdo de marca (orgánico) + bloque derecho de datos.
+
+  // --- Fondo negro general ---
+  ctx.fillStyle = INK;
   ctx.fillRect(0, 0, W, H);
 
+  // --- Bloque de marca con curva orgánica ---
+  ctx.save();
   ctx.fillStyle = options.palette.primary;
-  ctx.fillRect(0, 0, W, 14);
+  drawBlob(ctx, -W * 0.07, -H * 0.06, W * 0.47, H * 1.12, [
+    [0.42, 0.0],
+    [0.86, 0.06],
+    [1.0, 0.4],
+    [0.94, 0.72],
+    [0.5, 0.98],
+    [0.06, 0.94],
+    [0.0, 0.42],
+  ]);
+  ctx.fill();
+  ctx.restore();
 
-  const padding = 56;
+  // --- Línea dorada que separa las dos caras ---
+  ctx.save();
+  ctx.strokeStyle = gold;
+  ctx.lineWidth = 4;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(W * 0.44, -10);
+  ctx.bezierCurveTo(W * 0.4, H * 0.3, W * 0.46, H * 0.66, W * 0.42, H + 10);
+  ctx.stroke();
+  ctx.restore();
 
-  drawLine(ctx, 'Catálogo Digital 24/7', padding, 78, W - padding * 2, {
-    font: `800 24px ${FONT_HEADING}`,
-    color: options.palette.primary,
+  // --- Lado de marca: símbolo + nombre + tagline ---
+  drawBrandMark(ctx, options, W * 0.19, 96, 66);
+  drawTracked(ctx, 'ELECTROHOGAR', W * 0.19, 168, 4, {
+    font: `900 22px ${FONT_HEADING}`,
+    color: '#FFFFFF',
+    align: 'center',
   });
-  drawLine(ctx, 'Escaneá con tu celular', W - padding, 78, 320, {
-    font: `400 17px ${FONT_BODY}`,
-    color: '#6B7280',
-    align: 'right',
+  drawLine(ctx, 'COSTA RICA', W * 0.19, 192, 240, {
+    font: `700 13px ${FONT_BODY}`,
+    color: gold,
+    align: 'center',
   });
 
-  // Código QR
-  const qrSize = 300;
-  const qrX = padding;
-  const qrY = 132;
+  // --- QR enmarcado en oro ---
+  const qrSize = 190;
+  const qrX = W * 0.19 - qrSize / 2;
+  const qrY = 250;
+  ctx.save();
   ctx.fillStyle = '#FFFFFF';
-  ctx.fillRect(qrX, qrY, qrSize, qrSize);
+  roundRect(ctx, qrX - 8, qrY - 8, qrSize + 16, qrSize + 16, 10);
+  ctx.fill();
+  ctx.restore();
   await drawImage(ctx, options.qrDataUrl, qrX, qrY, qrSize, qrSize);
-  ctx.strokeStyle = options.palette.border;
-  ctx.lineWidth = 2;
-  ctx.strokeRect(qrX, qrY, qrSize, qrSize);
+  ctx.save();
+  ctx.strokeStyle = gold;
+  ctx.lineWidth = 3;
+  roundRect(ctx, qrX - 8, qrY - 8, qrSize + 16, qrSize + 16, 10);
+  ctx.stroke();
+  ctx.restore();
 
   if (!options.qrDataUrl) {
-    drawLine(ctx, 'QR', qrX + qrSize / 2, qrY + qrSize / 2 + 18, qrSize - 20, {
-      font: `800 40px ${FONT_HEADING}`,
+    drawLine(ctx, 'QR', qrX + qrSize / 2, qrY + qrSize / 2 + 14, qrSize - 20, {
+      font: `800 34px ${FONT_HEADING}`,
       color: '#9CA3AF',
       align: 'center',
     });
   }
 
-  // Pasos
-  const stepsX = qrX + qrSize + 40;
-  const steps = [
-    'Escaneá el código',
-    'Elegí tu electrodoméstico',
-    'Pedí por WhatsApp',
+  drawLine(ctx, 'Escaneá el catálogo', W * 0.19, 480, 300, {
+    font: `600 15px ${FONT_BODY}`,
+    color: 'rgba(255,255,255,0.85)',
+    align: 'center',
+  });
+
+  // ================= LADO DE DATOS =================
+  const dataX = W * 0.56;
+
+  drawLine(ctx, 'ElectroHogar Costa Rica', dataX, 120, W - dataX - 58, {
+    font: `800 26px ${FONT_HEADING}`,
+    color: '#FFFFFF',
+  });
+  drawLine(ctx, 'Catálogo de electrodomésticos', dataX, 150, W - dataX - 58, {
+    font: `500 17px ${FONT_BODY}`,
+    color: gold,
+  });
+
+  // Línea dorada corta bajo el encabezado
+  ctx.save();
+  ctx.strokeStyle = gold;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(dataX, 176);
+  ctx.lineTo(dataX + 62, 176);
+  ctx.stroke();
+  ctx.restore();
+
+  // Datos con iconos circulares unidos por una línea vertical
+  const rows: Array<{ icon: 'phone' | 'globe' | 'pin'; text: string }> = [
+    { icon: 'phone', text: `+506 ${options.phone}` },
+    { icon: 'globe', text: options.website.replace(/^https?:\/\//, '').replace(/\/$/, '') },
+    { icon: 'pin', text: options.coverage },
   ];
-  steps.forEach((step, index) => {
-    const y = qrY + 66 + index * 72;
+
+  const rowStart = 236;
+  const rowGap = 84;
+  const iconX = dataX + 20;
+
+  ctx.save();
+  ctx.strokeStyle = gold;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(iconX, rowStart + 42);
+  ctx.lineTo(iconX, rowStart + rowGap * (rows.length - 1) + 42);
+  ctx.stroke();
+  ctx.restore();
+
+  rows.forEach((row, index) => {
+    const y = rowStart + index * rowGap;
+
     ctx.save();
-    ctx.fillStyle = options.palette.primary;
+    ctx.fillStyle = gold;
     ctx.beginPath();
-    ctx.arc(stepsX + 18, y - 7, 18, 0, Math.PI * 2);
+    ctx.arc(iconX, y + 42, 18, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = `800 20px ${FONT_BODY}`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(String(index + 1), stepsX + 18, y - 6);
     ctx.restore();
 
-    drawLine(ctx, step, stepsX + 52, y, W - stepsX - 52 - padding, {
-      font: `${index === 2 ? '800' : '500'} 20px ${FONT_BODY}`,
-      color: index === 2 ? '#059669' : '#374151',
+    drawDataIcon(ctx, iconX, y + 42, 18, row.icon, INK);
+
+    drawLine(ctx, row.text, iconX + 40, y + 50, W - iconX - 98, {
+      font: `600 18px ${FONT_BODY}`,
+      color: '#FFFFFF',
     });
   });
 
-  // Pie
-  ctx.strokeStyle = options.palette.border;
-  ctx.lineWidth = 2;
+  // --- Líneas doradas de esquina (detalle del diseño de referencia) ---
+  ctx.save();
+  ctx.strokeStyle = gold;
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
   ctx.beginPath();
-  ctx.moveTo(padding, H - 92);
-  ctx.lineTo(W - padding, H - 92);
+  ctx.moveTo(W - 150, 46);
+  ctx.lineTo(W - 58, 46);
+  ctx.moveTo(W - 150, H - 46);
+  ctx.lineTo(W - 58, H - 46);
   ctx.stroke();
-
-  drawLine(ctx, 'Garantía de fábrica', padding, H - 46, 400, {
-    font: `400 19px ${FONT_BODY}`,
-    color: '#6B7280',
-  });
-  drawLine(ctx, `+506 ${options.phone}`, W - padding, H - 46, 320, {
-    font: `800 19px ${FONT_BODY}`,
-    color: options.palette.primary,
-    align: 'right',
-  });
+  ctx.restore();
 }
 
 /**
