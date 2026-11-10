@@ -1,7 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import QRCode from 'qrcode';
 import { CardProfile, ColorPalette } from '../types';
 import { PALETTES } from '../data/palettes';
-import { QRCodeRenderer } from './QRCodeRenderer';
+import {
+  CARD_FILENAMES,
+  CARD_HEIGHT_PX,
+  CARD_WIDTH_PX,
+  CardRenderOptions,
+  downloadCanvasAsPng,
+  drawBusinessCard,
+  renderCardPreview,
+  renderCardSheet,
+} from '../utils/cardImage';
 import { 
   Printer, 
   Smartphone, 
@@ -9,13 +19,12 @@ import {
   Phone, 
   RotateCw,
   QrCode,
-  MapPin,
   CheckCircle2,
   ShieldCheck,
-  Building2,
   Palette as PaletteIcon,
-  Layers,
-  ArrowRight
+  Download,
+  FileImage,
+  AlertTriangle
 } from 'lucide-react';
 
 interface CardStudioProps {
@@ -35,6 +44,11 @@ export const CardStudio: React.FC<CardStudioProps> = ({
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [qrUrlCustom, setQrUrlCustom] = useState(catalogUrl);
+  const [qrDataUrl, setQrDataUrl] = useState('');
+  const [sheetDataUrl, setSheetDataUrl] = useState('');
+  const [downloadError, setDownloadError] = useState('');
+
+  const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // El destino del QR es siempre la URL pública del catálogo. Si cambia, la
   // vista previa se actualiza sola.
@@ -42,8 +56,118 @@ export const CardStudio: React.FC<CardStudioProps> = ({
     setQrUrlCustom(catalogUrl);
   }, [catalogUrl]);
 
+  const renderOptions: CardRenderOptions = useMemo(
+    () => ({
+      brandName: profile.brandName,
+      serviceTagline: profile.serviceTagline,
+      slogan: profile.slogan,
+      phone: profile.phone,
+      coverage: profile.coverage,
+      qrDataUrl,
+      palette: activePalette,
+    }),
+    [
+      profile.brandName,
+      profile.serviceTagline,
+      profile.slogan,
+      profile.phone,
+      profile.coverage,
+      qrDataUrl,
+      activePalette,
+    ]
+  );
+
+  // El QR se genera como PNG para poder dibujarlo en el lienzo.
+  useEffect(() => {
+    let cancelled = false;
+    const target = qrUrlCustom || catalogUrl;
+
+    QRCode.toDataURL(target, {
+      width: 900,
+      margin: 1,
+      color: { dark: activePalette.primary, light: '#FFFFFF' },
+      errorCorrectionLevel: 'M',
+    })
+      .then((url) => {
+        if (!cancelled) setQrDataUrl(url);
+      })
+      .catch(() => {
+        if (!cancelled) setQrDataUrl('');
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [qrUrlCustom, catalogUrl, activePalette.primary]);
+
+  // La vista previa y la hoja se redibujan con los mismos datos que se
+  // descargan, de modo que lo que se ve es lo que se descarga (FR-019).
+  const redraw = useCallback(async () => {
+    // Las fuentes deben estar listas o el lienzo usará la de respaldo.
+    if (typeof document !== 'undefined' && document.fonts?.ready) {
+      await document.fonts.ready;
+    }
+
+    if (previewCanvasRef.current) {
+      await renderCardPreview(
+        previewCanvasRef.current,
+        renderOptions,
+        isFlipped ? 'back' : 'front'
+      );
+    }
+
+    const sheet = await renderCardSheet(renderOptions);
+    setSheetDataUrl(sheet.toDataURL('image/png'));
+  }, [renderOptions, isFlipped]);
+
+  useEffect(() => {
+    void redraw();
+  }, [redraw]);
+
   const handlePrint = () => {
     window.print();
+  };
+
+  const missingPhone = profile.phone.replace(/[^0-9]/g, '').length < 8;
+
+  /** Renderiza una cara de la tarjeta a 300 DPI y la descarga como PNG. */
+  const downloadSide = async (side: 'front' | 'back') => {
+    setDownloadError('');
+    try {
+      if (typeof document !== 'undefined' && document.fonts?.ready) {
+        await document.fonts.ready;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = CARD_WIDTH_PX;
+      canvas.height = CARD_HEIGHT_PX;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('sin contexto 2d');
+      await drawBusinessCard(ctx, renderOptions, side);
+      downloadCanvasAsPng(
+        canvas,
+        side === 'front' ? CARD_FILENAMES.front : CARD_FILENAMES.back
+      );
+    } catch {
+      setDownloadError(
+        'No se pudo iniciar la descarga del PNG. Podés usar la opción de imprimir en su lugar.'
+      );
+    }
+  };
+
+  /** Renderiza la hoja de 8 tarjetas y la descarga como PNG. */
+  const downloadSheet = async () => {
+    setDownloadError('');
+    try {
+      if (typeof document !== 'undefined' && document.fonts?.ready) {
+        await document.fonts.ready;
+      }
+      const canvas = await renderCardSheet(renderOptions);
+      downloadCanvasAsPng(canvas, CARD_FILENAMES.sheet);
+    } catch {
+      setDownloadError(
+        'No se pudo iniciar la descarga del PNG. Podés usar la opción de imprimir en su lugar.'
+      );
+    }
   };
 
   return (
@@ -270,153 +394,13 @@ export const CardStudio: React.FC<CardStudioProps> = ({
               </button>
             </div>
 
-            {/* Realistic Physical Card Canvas */}
+            {/* Vista previa sobre lienzo: es exactamente el PNG que se descarga */}
             <div className="flex flex-col items-center justify-center p-6 sm:p-10 bg-[#EDF0F4] rounded-2xl border border-dashed border-gray-300">
-              <div className="w-full max-w-[460px] aspect-[1.75/1] rounded-2xl shadow-xl relative overflow-hidden transition-all duration-300 border border-gray-300/80">
-                {!isFlipped ? (
-                  /* MINIMALIST FRONT: Clean, Brand-Focused, No Personal Names */
-                  <div
-                    className="w-full h-full p-6 sm:p-7 flex flex-col justify-between text-white relative"
-                    style={{
-                      background: `linear-gradient(135deg, ${activePalette.primary} 0%, ${activePalette.primaryDark} 100%)`,
-                    }}
-                  >
-                    {/* Top minimal line */}
-                    <div
-                      className="absolute top-0 left-0 right-0 h-1.5"
-                      style={{ backgroundColor: activePalette.secondary }}
-                    />
-
-                    {/* Top Row: Store references & Country */}
-                    <div className="flex items-center justify-between text-[10px] tracking-widest uppercase font-bold text-gray-300">
-                      <span>Costa Rica 🇨🇷</span>
-                      <span className="text-amber-300">Gollo • EPA Oficial</span>
-                    </div>
-
-                    {/* Center Brand Block */}
-                    <div className="my-auto py-1">
-                      <div className="flex items-center gap-3 mb-1.5">
-                        <div
-                          className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm shadow-md"
-                          style={{
-                            backgroundColor: activePalette.secondary,
-                            color: activePalette.primaryDark,
-                          }}
-                        >
-                          EH
-                        </div>
-                        <h3 className="text-xl sm:text-2xl font-black font-['Montserrat',sans-serif] tracking-tight text-white">
-                          {profile.brandName}
-                        </h3>
-                      </div>
-                      <p className="text-xs font-semibold text-blue-200 tracking-wide uppercase text-[10px]">
-                        {profile.serviceTagline}
-                      </p>
-                      <p className="text-xs text-blue-100/90 italic mt-2 line-clamp-1 font-light">
-                        "{profile.slogan}"
-                      </p>
-                    </div>
-
-                    {/* Bottom Row: Contact & Trust */}
-                    <div className="pt-2 border-t border-white/15 flex items-end justify-between text-xs">
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-1.5 text-emerald-300 font-bold">
-                          <Phone className="w-3.5 h-3.5" />
-                          <span>WhatsApp: +506 {profile.phone}</span>
-                        </div>
-                        <p className="text-[10px] text-blue-200 line-clamp-1">
-                          {profile.coverage}
-                        </p>
-                      </div>
-
-                      <div className="text-right">
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-amber-300 block">
-                          Garantía de Fábrica
-                        </span>
-                        <span className="text-[8px] text-gray-300">
-                          Entrega a Domicilio
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  /* MINIMALIST BACK: Large Clean QR Code with Direct WhatsApp Instructions */
-                  <div className="w-full h-full p-5 sm:p-6 flex flex-col justify-between bg-white text-gray-900 relative">
-                    {/* Top minimal color strip */}
-                    <div
-                      className="absolute top-0 left-0 right-0 h-1.5"
-                      style={{ backgroundColor: activePalette.primary }}
-                    />
-
-                    {/* Header */}
-                    <div className="flex items-center justify-between border-b border-gray-100 pb-1.5">
-                      <div>
-                        <span className="text-[9px] font-extrabold uppercase tracking-widest text-[#0F4C81] block">
-                          Catálogo Digital 24/7
-                        </span>
-                        <h4 className="text-xs sm:text-sm font-black font-['Montserrat',sans-serif] text-gray-900">
-                          Escanea para Ver Fotos y Cuotas
-                        </h4>
-                      </div>
-                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                        WhatsApp Directo
-                      </span>
-                    </div>
-
-                    {/* Center: Clean QR Code with clear callout */}
-                    <div className="flex items-center gap-4 my-auto">
-                      <div className="p-2 bg-white rounded-xl shadow-md border border-gray-200 shrink-0">
-                        <QRCodeRenderer
-                          value={qrUrlCustom || catalogUrl}
-                          size={105}
-                          fgColor={activePalette.primary}
-                          bgColor="#FFFFFF"
-                        />
-                      </div>
-
-                      <div className="space-y-2 text-xs">
-                        <div className="flex items-start gap-2">
-                          <span className="w-4 h-4 rounded-full bg-[#0F4C81] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
-                            1
-                          </span>
-                          <p className="text-gray-700 text-[11px] leading-tight font-medium">
-                            <strong>Apunta la cámara</strong> de tu teléfono al código QR.
-                          </p>
-                        </div>
-
-                        <div className="flex items-start gap-2">
-                          <span className="w-4 h-4 rounded-full bg-[#0F4C81] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
-                            2
-                          </span>
-                          <p className="text-gray-700 text-[11px] leading-tight font-medium">
-                            <strong>Explora los productos</strong> de Gollo y EPA en Colones ₡.
-                          </p>
-                        </div>
-
-                        <div className="flex items-start gap-2">
-                          <span className="w-4 h-4 rounded-full bg-[#25D366] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
-                            3
-                          </span>
-                          <p className="text-gray-700 text-[11px] leading-tight font-medium">
-                            <strong>Pide por WhatsApp</strong> y coordinamos entrega a tu puerta.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Bottom row */}
-                    <div className="pt-2 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-500">
-                      <span className="flex items-center gap-1 font-medium">
-                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                        Factura oficial y garantía de fábrica
-                      </span>
-                      <span className="font-bold text-[#0F4C81]">
-                        +506 {profile.phone}
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <canvas
+                ref={previewCanvasRef}
+                className="w-full max-w-[460px] rounded-2xl shadow-xl border border-gray-300/80 bg-white"
+                aria-label="Vista previa de la tarjeta de presentación"
+              />
 
               <div className="flex items-center gap-4 mt-4 text-xs text-gray-500">
                 <span className="flex items-center gap-1">
@@ -424,31 +408,90 @@ export const CardStudio: React.FC<CardStudioProps> = ({
                   QR 100% Funcional y Escaneable
                 </span>
                 <span>•</span>
-                <span>3.5" × 2" (85 × 54 mm)</span>
+                <span>3.5" × 2" (85 × 54 mm) a 300 DPI</span>
               </div>
             </div>
 
-            {/* Print trigger banner */}
-            <div className="mt-6 pt-5 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3">
-              <div className="text-xs text-gray-600">
-                <strong className="text-gray-900 block font-semibold">¿Listo para enviar a imprenta o imprimir?</strong>
-                Imprime la hoja completa con 8 tarjetas con marcas de corte.
+            {/* Descargas en PNG */}
+            <div className="mt-6 pt-5 border-t border-gray-100 space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="text-xs text-gray-600">
+                  <strong className="text-gray-900 block font-semibold">
+                    ¿Listo para enviar a imprenta o compartir?
+                  </strong>
+                  Descarga la tarjeta en PNG a 300 DPI o imprime la hoja de 8 tarjetas.
+                </div>
+                <button
+                  onClick={handlePrint}
+                  className="inline-flex items-center gap-2 bg-[#0F4C81] hover:bg-[#082a47] text-white font-bold px-5 py-3 rounded-xl text-sm shadow-xs transition cursor-pointer"
+                >
+                  <Printer className="w-4 h-4" />
+                  Imprimir Hoja (8x Tarjetas)
+                </button>
               </div>
 
-              <button
-                onClick={handlePrint}
-                className="inline-flex items-center gap-2 bg-[#0F4C81] hover:bg-[#082a47] text-white font-bold px-5 py-3 rounded-xl text-sm shadow-xs transition cursor-pointer"
-              >
-                <Printer className="w-4 h-4" />
-                Imprimir Hoja (8x Tarjetas)
-              </button>
+              {missingPhone && (
+                <div
+                  role="alert"
+                  className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-[11px]"
+                >
+                  <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>
+                    Falta un número de WhatsApp válido. La tarjeta se puede descargar, pero
+                    el cliente no va a poder contactarte. Completalo antes de imprimir.
+                  </span>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => void downloadSide('front')}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-[#0F4C81]/25 bg-blue-50/60 hover:bg-blue-100 text-[#0F4C81] font-bold text-xs transition cursor-pointer"
+                >
+                  <Download className="w-4 h-4" />
+                  Anverso .png
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void downloadSide('back')}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-[#0F4C81]/25 bg-blue-50/60 hover:bg-blue-100 text-[#0F4C81] font-bold text-xs transition cursor-pointer"
+                >
+                  <Download className="w-4 h-4" />
+                  Reverso .png
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void downloadSheet()}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#0F4C81] hover:bg-[#082a47] text-white font-bold text-xs transition cursor-pointer shadow-xs"
+                >
+                  <FileImage className="w-4 h-4" />
+                  Hoja 8 Tarjetas .png
+                </button>
+              </div>
+
+              <p className="text-[11px] text-gray-400">
+                Los PNG se generan a 300 DPI: 1004 × 638 px por tarjeta y 2088 × 2632 px la
+                hoja completa, listos para imprenta.
+              </p>
+
+              {downloadError && (
+                <div
+                  role="alert"
+                  className="flex items-start gap-2 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-[11px]"
+                >
+                  <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{downloadError}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* PRINT-ONLY SHEET: Hidden on web screen, shown when calling window.print() */}
-      <div className="hidden print-only">
+      {/* PRINT-ONLY SHEET: la misma hoja que se descarga en PNG, oculta en
+          pantalla y visible al imprimir (FR-013, FR-018). */}
+      <div className="print-only">
         <div className="text-center pb-4 border-b border-gray-400 mb-6">
           <h2 className="text-lg font-bold">
             Tarjetas de Presentación Corporativas - {profile.brandName}
@@ -458,83 +501,17 @@ export const CardStudio: React.FC<CardStudioProps> = ({
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          {[1, 2, 3, 4, 5, 6, 7, 8].map((index) => (
-            <div
-              key={index}
-              className="border border-dashed border-gray-400 rounded-lg overflow-hidden p-1 card-print-container"
-              style={{ width: '85mm', height: '54mm' }}
-            >
-              {index % 2 !== 0 ? (
-                /* FRONT */
-                <div
-                  className="w-full h-full p-3 flex flex-col justify-between text-white rounded text-[9px]"
-                  style={{
-                    backgroundColor: activePalette.primary,
-                    color: '#FFFFFF',
-                  }}
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <span className="font-black text-xs block text-amber-300">
-                        {profile.brandName}
-                      </span>
-                      <span className="text-[8px] text-blue-200">
-                        {profile.serviceTagline}
-                      </span>
-                    </div>
-                    <span className="bg-white/20 px-1 py-0.5 rounded text-[7px] font-bold">
-                      Gollo • EPA CR
-                    </span>
-                  </div>
-
-                  <div className="my-1">
-                    <p className="text-[8px] text-blue-100 italic line-clamp-1">"{profile.slogan}"</p>
-                  </div>
-
-                  <div className="flex justify-between items-end border-t border-white/20 pt-1 text-[8px]">
-                    <div>
-                      <p className="font-bold text-amber-300">WhatsApp: +506 {profile.phone}</p>
-                      <p className="text-gray-300">{profile.coverage}</p>
-                    </div>
-                    <span className="font-bold text-white text-[7px]">Entrega a Domicilio</span>
-                  </div>
-                </div>
-              ) : (
-                /* BACK */
-                <div className="w-full h-full p-2.5 flex flex-col justify-between bg-white text-gray-900 rounded text-[8px]">
-                  <div className="flex justify-between items-center border-b pb-1">
-                    <span className="font-bold text-[#0F4C81] text-[9px]">
-                      Catálogo Digital 24/7
-                    </span>
-                    <span className="text-[7px] text-gray-500">Escanea con tu celular</span>
-                  </div>
-
-                  <div className="flex items-center gap-2 my-auto">
-                    <div className="shrink-0 border p-0.5 rounded">
-                      <QRCodeRenderer
-                        value={qrUrlCustom || catalogUrl}
-                        size={64}
-                        fgColor={activePalette.primary}
-                        bgColor="#FFFFFF"
-                      />
-                    </div>
-                    <div className="space-y-0.5 text-[7px]">
-                      <p className="font-bold text-gray-900">1. Escanea el código</p>
-                      <p className="text-gray-600">2. Elige tu electrodoméstico</p>
-                      <p className="font-bold text-emerald-700">3. Pide por WhatsApp</p>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between items-center text-[7px] text-gray-500 pt-0.5 border-t">
-                    <span>Garantía de Fábrica</span>
-                    <span className="font-bold">+506 {profile.phone}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+        {sheetDataUrl ? (
+          <img
+            src={sheetDataUrl}
+            alt="Hoja con 8 tarjetas de presentación con código QR"
+            className="w-full block"
+          />
+        ) : (
+          <p className="text-xs text-gray-500 text-center py-8">
+            Generando la hoja de tarjetas...
+          </p>
+        )}
       </div>
     </div>
   );
