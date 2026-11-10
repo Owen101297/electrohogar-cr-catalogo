@@ -25,10 +25,15 @@ interface CatalogViewProps {
   profile: CardProfile;
   activePalette: ColorPalette;
   advisorSettings: AdvisorSettings;
+  /**
+   * `true` en la pantalla del asesor (muestra herramientas de administración);
+   * `false` en el catálogo público (solo consulta y contacto).
+   */
+  isAdvisor: boolean;
   onSelectProduct: (product: Product) => void;
-  onOpenCardStudio: () => void;
-  onOpenDigitalCard: () => void;
-  onOpenAddProduct: () => void;
+  onOpenCardStudio?: () => void;
+  onOpenDigitalCard?: () => void;
+  onOpenAddProduct?: () => void;
 }
 
 export const CatalogView: React.FC<CatalogViewProps> = ({
@@ -36,6 +41,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
   profile,
   activePalette,
   advisorSettings,
+  isAdvisor,
   onSelectProduct,
   onOpenCardStudio,
   onOpenDigitalCard,
@@ -119,12 +125,14 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
               WhatsApp: +506 {profile.phone}
             </a>
 
-            <button
-              onClick={onOpenCardStudio}
-              className="inline-flex items-center gap-1.5 bg-white/15 hover:bg-white/25 text-white font-semibold text-xs px-3.5 py-2.5 rounded-xl border border-white/20 transition cursor-pointer"
-            >
-              Configurar Tarjeta / QR
-            </button>
+            {isAdvisor && onOpenCardStudio && (
+              <button
+                onClick={onOpenCardStudio}
+                className="inline-flex items-center gap-1.5 bg-white/15 hover:bg-white/25 text-white font-semibold text-xs px-3.5 py-2.5 rounded-xl border border-white/20 transition cursor-pointer"
+              >
+                Configurar Tarjeta / QR
+              </button>
+            )}
           </div>
         </div>
 
@@ -209,15 +217,17 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
             </button>
           </div>
 
-          {/* Add product button */}
-          <button
-            onClick={onOpenAddProduct}
-            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-blue-50 text-[#0F4C81] hover:bg-blue-100 font-bold text-xs transition cursor-pointer shrink-0 border border-blue-200"
-            title="Agregar producto nuevo de Gollo o EPA"
-          >
-            <PlusCircle className="w-4 h-4" />
-            + Agregar Producto
-          </button>
+          {/* Add product button — solo en la pantalla del asesor */}
+          {isAdvisor && onOpenAddProduct && (
+            <button
+              onClick={onOpenAddProduct}
+              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-blue-50 text-[#0F4C81] hover:bg-blue-100 font-bold text-xs transition cursor-pointer shrink-0 border border-blue-200"
+              title="Agregar producto nuevo de Gollo o EPA"
+            >
+              <PlusCircle className="w-4 h-4" />
+              + Agregar Producto
+            </button>
+          )}
         </div>
 
         {/* Category Horizontal Filter Carousel */}

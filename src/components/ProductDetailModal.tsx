@@ -18,8 +18,13 @@ import {
 interface ProductDetailModalProps {
   product: Product | null;
   onClose: () => void;
-  onEditProduct: (product: Product) => void;
-  onDeleteProduct: (product: Product) => void;
+  /**
+   * `true` en la pantalla del asesor (permite editar y eliminar);
+   * `false` en el catálogo público (solo consulta y contacto).
+   */
+  isAdvisor: boolean;
+  onEditProduct?: (product: Product) => void;
+  onDeleteProduct?: (product: Product) => void;
   profile: CardProfile;
   activePalette: ColorPalette;
   advisorSettings: AdvisorSettings;
@@ -28,6 +33,7 @@ interface ProductDetailModalProps {
 export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   product,
   onClose,
+  isAdvisor,
   onEditProduct,
   onDeleteProduct,
   profile,
@@ -309,25 +315,27 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               </p>
             </div>
 
-            {/* Gestión del producto: editar y eliminar */}
-            <div className="grid grid-cols-2 gap-2 pt-3 border-t border-gray-100">
-              <button
-                type="button"
-                onClick={() => onEditProduct(product)}
-                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-[#0F4C81]/30 bg-blue-50/60 hover:bg-blue-100 text-[#0F4C81] font-bold text-xs transition cursor-pointer"
-              >
-                <Pencil className="w-3.5 h-3.5" />
-                Editar producto
-              </button>
-              <button
-                type="button"
-                onClick={() => onDeleteProduct(product)}
-                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-red-200 bg-red-50/60 hover:bg-red-100 text-red-700 font-bold text-xs transition cursor-pointer"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                Eliminar producto
-              </button>
-            </div>
+            {/* Gestión del producto: editar y eliminar (solo modo asesor) */}
+            {isAdvisor && onEditProduct && onDeleteProduct && (
+              <div className="grid grid-cols-2 gap-2 pt-3 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => onEditProduct(product)}
+                  className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-[#0F4C81]/30 bg-blue-50/60 hover:bg-blue-100 text-[#0F4C81] font-bold text-xs transition cursor-pointer"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                  Editar producto
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onDeleteProduct(product)}
+                  className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-red-200 bg-red-50/60 hover:bg-red-100 text-red-700 font-bold text-xs transition cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Eliminar producto
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -12,19 +12,44 @@
   }
 }
 
+/* La hoja de tarjetas se muestra solo al imprimir. */
+.print-only {
+  display: none;
+}
+
 @media print {
+  /* Se imprime únicamente la hoja de tarjetas: todo lo demás se oculta y la
+     hoja se lleva al inicio de la página (FR-013). */
+  body * {
+    visibility: hidden;
+  }
+
+  .print-only,
+  .print-only * {
+    visibility: visible;
+  }
+
+  .print-only {
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
   /* Hide interactive web UI during printing */
   .no-print {
     display: none !important;
   }
-  
-  .print-only {
-    display: block !important;
-  }
-  
+
   body {
     background: white !important;
     padding: 0 !important;
+  }
+
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
   }
 
   .card-print-container {

@@ -5,10 +5,21 @@ import { ShieldCheck, Truck, Phone, MessageCircle, ExternalLink, MapPin } from '
 interface FooterProps {
   profile: CardProfile;
   activePalette: ColorPalette;
-  onOpenCardStudio: () => void;
+  /**
+   * `true` en la pantalla del asesor (muestra el acceso al diseñador de
+   * tarjetas); `false` en el catálogo público (sin ninguna pista de
+   * herramientas internas).
+   */
+  isAdvisor: boolean;
+  onOpenCardStudio?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ profile, activePalette, onOpenCardStudio }) => {
+export const Footer: React.FC<FooterProps> = ({
+  profile,
+  activePalette,
+  isAdvisor,
+  onOpenCardStudio,
+}) => {
   return (
     <footer className="bg-[#121C27] text-gray-300 pt-12 pb-8 border-t border-gray-800 no-print mt-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-8">
@@ -82,14 +93,16 @@ export const Footer: React.FC<FooterProps> = ({ profile, activePalette, onOpenCa
               <p className="text-[11px] text-gray-500">
                 San José • Alajuela • Heredia • Cartago • Puntarenas • Guanacaste • Limón
               </p>
-              <div className="pt-2">
-                <button
-                  onClick={onOpenCardStudio}
-                  className="text-xs text-amber-400 hover:underline font-semibold cursor-pointer"
-                >
-                  Ver Tarjeta Corporativa con QR &rarr;
-                </button>
-              </div>
+              {isAdvisor && onOpenCardStudio && (
+                <div className="pt-2">
+                  <button
+                    onClick={onOpenCardStudio}
+                    className="text-xs text-amber-400 hover:underline font-semibold cursor-pointer"
+                  >
+                    Ver Tarjeta Corporativa con QR &rarr;
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
