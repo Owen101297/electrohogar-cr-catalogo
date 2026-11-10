@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-10
 
-**Status**: Draft
+**Status**: Complete — implementada y verificada en producción el 2026-11-10 (ver `verification.md`)
 
 **Input**: User description: "La página web pública no debe mostrar nada de botones ni archivos de crear la tarjeta con QR, ni el porcentaje de ganancia, ni configuraciones de tarjeta. Modo usuario y modo asesor deben ser totalmente diferentes pantallas, con acceso del asesor por otra ruta y que se desactive al cerrar el navegador. Y la tarjeta debe quedar lista para imprimir."
 
