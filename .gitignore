@@ -8,3 +8,6 @@ coverage/
 .env*
 !.env.example
 .vercel
+
+# La fuente de verdad de dependencias es bun.lock; no versionar package-lock.json.
+package-lock.json
