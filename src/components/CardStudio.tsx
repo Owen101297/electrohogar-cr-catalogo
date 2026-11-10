@@ -63,6 +63,7 @@ export const CardStudio: React.FC<CardStudioProps> = ({
       slogan: profile.slogan,
       phone: profile.phone,
       coverage: profile.coverage,
+      website: qrUrlCustom || catalogUrl,
       qrDataUrl,
       palette: activePalette,
     }),
@@ -72,6 +73,8 @@ export const CardStudio: React.FC<CardStudioProps> = ({
       profile.slogan,
       profile.phone,
       profile.coverage,
+      qrUrlCustom,
+      catalogUrl,
       qrDataUrl,
       activePalette,
     ]
