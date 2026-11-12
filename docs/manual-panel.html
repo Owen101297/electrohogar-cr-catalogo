@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>Manual del panel — ElectroHogar Costa Rica</title>
+<style>
+  @page { size: A4; margin: 16mm 15mm; }
+
+  :root {
+    --blue: #0F4C81;
+    --blue-dark: #082a47;
+    --gold: #EAB308;
+    --ink: #121C27;
+    --gray: #5A6472;
+    --line: #DFE3E8;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--ink);
+  }
+
+  .brandbar {
+    background: linear-gradient(120deg, var(--blue) 0%, var(--blue-dark) 100%);
+    color: #fff;
+    padding: 14px 18px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 4px solid var(--gold);
+  }
+  .brandbar h1 { margin: 0; font-size: 19pt; font-weight: 800; letter-spacing: 2px; }
+  .brandbar .sub {
+    margin: 2px 0 0;
+    font-size: 8.5pt;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 700;
+  }
+  .docid { text-align: right; font-size: 8pt; color: #BFD7FE; line-height: 1.5; }
+  .docid strong { color: #fff; letter-spacing: 1px; }
+
+  h2 {
+    font-size: 12pt;
+    color: var(--blue);
+    margin: 22px 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 2px solid var(--line);
+    page-break-after: avoid;
+  }
+  h2 .num { color: var(--gold); font-weight: 800; margin-right: 6px; }
+
+  h3 { font-size: 10.5pt; color: var(--ink); margin: 14px 0 5px; page-break-after: avoid; }
+
+  p { margin: 7px 0; }
+
+  ol, ul { margin: 6px 0; padding-left: 22px; }
+  li { margin: 3px 0; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+  th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+  th {
+    background: var(--blue);
+    color: #fff;
+    font-weight: 700;
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+  }
+  tbody tr:nth-child(even) td { background: #F7F9FC; }
+
+  .box {
+    background: #F7F9FC;
+    border-left: 4px solid var(--blue);
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 0 5px 5px 0;
+    page-break-inside: avoid;
+  }
+  .box.warn { background: #FFF8E6; border-left-color: var(--gold); }
+  .box.danger { background: #FDECEC; border-left-color: #C0392B; }
+  .box p { margin: 4px 0; }
+  .box ul { margin: 5px 0; }
+
+  .step {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 14px 12px;
+    margin: 10px 0;
+    page-break-inside: avoid;
+  }
+  .step h3 { margin-top: 0; color: var(--blue); }
+
+  .tag {
+    display: inline-block;
+    background: var(--gold);
+    color: var(--ink);
+    font-size: 7.5pt;
+    font-weight: 800;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-right: 6px;
+  }
+
+  code {
+    background: #EEF2F7;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-family: Menlo, Consolas, monospace;
+    font-size: 9pt;
+    color: var(--blue-dark);
+  }
+
+  .foot {
+    margin-top: 22px;
+    padding-top: 8px;
+    border-top: 2px solid var(--gold);
+    font-size: 7.5pt;
+    color: var(--gray);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="brandbar">
+  <div>
+    <h1>ELECTROHOGAR</h1>
+    <p class="sub">Costa Rica</p>
+  </div>
+  <div class="docid">
+    <strong>MANUAL DE USO</strong><br />
+    Panel de administración<br />
+    Noviembre 2026
+  </div>
+</div>
+
+<h2><span class="num">1.</span>Cómo entrar al panel</h2>
+<ol>
+  <li>Abra en el navegador: <code>https://electrohogar-cr-catalogo.vercel.app/asesor</code></li>
+  <li>Aparece una ventana que dice <strong>"Acceso del asesor"</strong>.</li>
+  <li>Presione <strong>"Entrar al modo asesor"</strong>.</li>
+</ol>
+<div class="box">
+  <p><strong>Dirección privada:</strong> no está enlazada desde el catálogo público, así que sus
+  clientes no la van a encontrar.</p>
+  <p>La sesión se cierra sola al cerrar el navegador. Para salir manualmente, baje hasta el
+  final de la página y presione <strong>"Salir del modo asesor"</strong>.</p>
+</div>
+
+<h2><span class="num">2.</span>Las tres secciones</h2>
+<p>En la barra superior hay tres botones:</p>
+<table>
+  <thead><tr><th style="width:34%">Botón</th><th>Para qué sirve</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Catálogo</strong></td><td>Ver y gestionar los productos</td></tr>
+    <tr><td><strong>Panel</strong></td><td>Ver las métricas y estadísticas del catálogo</td></tr>
+    <tr><td><strong>Diseñador de Tarjeta con QR</strong></td><td>Generar y descargar las tarjetas</td></tr>
+  </tbody>
+</table>
+<p>A la derecha están <strong>"Tarjeta Digital"</strong> (muestra el QR en pantalla para que el
+cliente lo escanee) y <strong>"WhatsApp"</strong>.</p>
+<div class="box warn">
+  <p>El botón <strong>"8% Margen (Oculto)"</strong> muestra u oculta el porcentaje de comisión en
+  pantalla. Úselo en <em>Oculto</em> cuando haya clientes mirando.</p>
+</div>
+
+<h2><span class="num">3.</span>Agregar un producto</h2>
+<div class="step">
+  <ol>
+    <li>Entre a <strong>Catálogo</strong>.</li>
+    <li>Presione <strong>"+ Agregar Producto"</strong>.</li>
+    <li>Complete los campos de la tabla siguiente.</li>
+    <li>Presione <strong>"Guardar en Catálogo"</strong>.</li>
+  </ol>
+  <p>El producto aparece de inmediato en el catálogo público.</p>
+</div>
+
+<table>
+  <thead><tr><th style="width:32%">Campo</th><th>Qué poner</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Nombre del Electrodoméstico</strong></td><td>Nombre completo, ej. <em>Refrigeradora LG 14 Pies No Frost</em></td></tr>
+    <tr><td><strong>Tienda en Costa Rica</strong></td><td>Gollo, EPA o Ambas</td></tr>
+    <tr><td><strong>Categoría</strong></td><td>Refrigeración, Lavado, Cocina, Pantallas o Pequeños</td></tr>
+    <tr><td><strong>Marca</strong></td><td>Samsung, LG, Whirlpool, Mabe…</td></tr>
+    <tr><td><strong>Etiqueta Promocional</strong></td><td>Opcional: <em>Oferta Flash</em>, <em>-20% OFF</em></td></tr>
+    <tr><td><strong>Precio Actual (Colones ₡)</strong></td><td>Precio de contado, solo números: <code>299000</code></td></tr>
+    <tr><td><strong>Precio Normal / Lista (₡)</strong></td><td>Precio antes del descuento: <code>349000</code></td></tr>
+    <tr><td><strong>Cuota Quincenal (₡)</strong></td><td>Si lo deja vacío, el sistema la calcula</td></tr>
+    <tr><td><strong>Plazo del Crédito (Meses)</strong></td><td>6, 12, 18, 24 o 36</td></tr>
+    <tr><td><strong>Garantía (Meses)</strong></td><td>Ej. <code>12</code></td></tr>
+    <tr><td><strong>Código SKU</strong></td><td>Código del producto, ej. <em>LG-LT41WPP</em></td></tr>
+    <tr><td><strong>URL de la Foto</strong></td><td>Enlace directo a la imagen, debe empezar con <code>https://</code></td></tr>
+    <tr><td><strong>Descripción Breve</strong></td><td>Texto corto para el cliente</td></tr>
+    <tr><td><strong>Especificaciones</strong></td><td>Capacidad, Dimensiones, Voltaje, Eficiencia</td></tr>
+  </tbody>
+</table>
+
+<h2><span class="num">4.</span>Editar un producto</h2>
+<ol>
+  <li>En <strong>Catálogo</strong>, busque el producto.</li>
+  <li>Ábralo y presione <strong>"Editar producto"</strong> (o el lápiz en el <strong>Panel</strong>).</li>
+  <li>Cambie lo que necesite y presione <strong>"Guardar Cambios"</strong>.</li>
+</ol>
+<div class="box">
+  <p>El <strong>SKU no se puede modificar</strong> una vez creado: es el identificador del
+  producto.</p>
+</div>
+
+<h2><span class="num">5.</span>Eliminar un producto</h2>
+<ol>
+  <li>Abra el producto.</li>
+  <li>Presione <strong>"Eliminar producto"</strong> y confirme.</li>
+  <li>Aparece un aviso abajo con la opción <strong>Deshacer</strong> durante <strong>6 segundos</strong>.</li>
+</ol>
+<p>Si se equivocó, presione Deshacer antes de que desaparezca el aviso.</p>
+
+<h2><span class="num">6.</span>El Panel de métricas</h2>
+<table>
+  <thead><tr><th style="width:34%">Métrica</th><th>Qué significa</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Productos en catálogo</strong></td><td>Cuántos productos tiene cargados</td></tr>
+    <tr><td><strong>Valor total del catálogo</strong></td><td>Suma de todos los precios de contado</td></tr>
+    <tr><td><strong>Precio de contado promedio</strong></td><td>Promedio del catálogo</td></tr>
+    <tr><td><strong>Descuento promedio</strong></td><td>Promedio de los descuentos</td></tr>
+    <tr><td><strong>Comisión potencial</strong></td><td>Lo que ganaría si vende todo el catálogo</td></tr>
+  </tbody>
+</table>
+<p>Debajo hay dos gráficos de distribución (por tienda y por categoría) y dos listas de
+destacados (mayor valor y mayor descuento).</p>
+
+<h2><span class="num">7.</span>Descargar las tarjetas</h2>
+<ol>
+  <li>Entre a <strong>Diseñador de Tarjeta con QR</strong>.</li>
+  <li>Revise la vista previa. El botón <strong>"Ver Reverso (QR)"</strong> muestra la otra cara.</li>
+  <li>Descargue:</li>
+</ol>
+<table>
+  <thead><tr><th style="width:34%">Botón</th><th>Archivo</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Anverso .png</strong></td><td>Cara frontal de la tarjeta</td></tr>
+    <tr><td><strong>Reverso .png</strong></td><td>Cara trasera con el QR</td></tr>
+    <tr><td><strong>Hoja 8 Tarjetas .png</strong></td><td>Hoja con 8 tarjetas y marcas de corte</td></tr>
+  </tbody>
+</table>
+<p>Todos los archivos salen a <strong>300 DPI, listos para imprenta</strong>.</p>
+<div class="box">
+  <p>Use el botón <strong>"Hoja 8 Tarjetas .png"</strong> si va a imprimir en casa. Use los
+  archivos individuales si va a mandarlas a una imprenta profesional.</p>
+</div>
+
+<h2><span class="num">8.</span>Cambiar el teléfono, la marca o los colores</h2>
+<p>En <strong>Diseñador de Tarjeta con QR</strong>, columna izquierda:</p>
+<table>
+  <thead><tr><th style="width:38%">Campo</th><th>Qué cambia</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Nombre de la Empresa / Marca</strong></td><td>Nombre en la tarjeta</td></tr>
+    <tr><td><strong>Subtítulo o Rubro del Servicio</strong></td><td>Frase debajo del nombre</td></tr>
+    <tr><td><strong>WhatsApp Oficial (Costa Rica +506)</strong></td><td>Número en toda la web y en la tarjeta</td></tr>
+    <tr><td><strong>Lema o Promesa Comercial</strong></td><td>Frase de venta</td></tr>
+    <tr><td><strong>Zona de Cobertura</strong></td><td>Zonas donde entrega</td></tr>
+    <tr><td><strong>Enlace web del Catálogo</strong></td><td>Destino del QR</td></tr>
+    <tr><td><strong>Paleta de Color Corporativa</strong></td><td>Colores de la marca</td></tr>
+  </tbody>
+</table>
+<div class="box warn">
+  <p>Después de cambiar el número, <strong>vuelva a descargar los PNG</strong>: la tarjeta vieja
+  va a seguir mostrando el número anterior.</p>
+</div>
+
+<h2><span class="num">9.</span>Imprimir en casa</h2>
+<ol>
+  <li>Presione <strong>"Imprimir Hoja de Tarjetas (8x)"</strong>.</li>
+  <li>En el diálogo de impresión configure:
+    <ul>
+      <li><strong>Tamaño de papel:</strong> A4</li>
+      <li><strong>Orientación:</strong> Horizontal</li>
+      <li><strong>Márgenes:</strong> Ninguno</li>
+      <li><strong>Gráficos de fondo:</strong> Activados</li>
+    </ul>
+  </li>
+  <li>Imprima y corte por las líneas punteadas.</li>
+</ol>
+<div class="box">
+  <p>Si los colores salen cortados o aparece una barra blanca, revise que los márgenes estén en
+  "Ninguno" y los gráficos de fondo activados.</p>
+</div>
+
+<h2><span class="num">10.</span>Advertencia importante</h2>
+<div class="box danger">
+  <p><strong>El catálogo se guarda en este navegador, no en internet.</strong></p>
+  <ul>
+    <li>Si borra el caché o los datos del navegador, <strong>pierde los productos</strong> y
+    vuelven los 12 de ejemplo.</li>
+    <li>Si entra desde otra computadora o desde el celular, <strong>no va a ver sus
+    productos</strong>.</li>
+    <li>No use el modo incógnito para editar.</li>
+  </ul>
+  <p><strong>Recomendación:</strong> use siempre el mismo navegador y el mismo equipo para
+  administrar el catálogo, y no borre los datos de navegación.</p>
+</div>
+<p>Para que el catálogo quede guardado en la nube y se pueda editar desde cualquier dispositivo,
+hace falta la <strong>Etapa 2 (backend)</strong>, que se cotiza aparte.</p>
+
+<h2><span class="num">11.</span>Problemas frecuentes</h2>
+<table>
+  <thead><tr><th style="width:40%">Problema</th><th>Solución</th></tr></thead>
+  <tbody>
+    <tr><td>No aparece mi producto</td><td>Verifique que presionó "Guardar en Catálogo" y recargue la página</td></tr>
+    <tr><td>El botón de WhatsApp no abre</td><td>Revise que el número esté completo en el Diseñador de Tarjeta</td></tr>
+    <tr><td>El QR no funciona</td><td>Verifique que el "Enlace web del Catálogo" sea la dirección correcta y vuelva a descargar el PNG</td></tr>
+    <tr><td>Perdí mis productos</td><td>No borre el caché; consulte para restaurar desde un respaldo</td></tr>
+    <tr><td>La tarjeta muestra un número viejo</td><td>Vuelva a descargar los PNG después de cambiar el número</td></tr>
+  </tbody>
+</table>
+
+<div class="box">
+  <p><strong>Contacto de soporte:</strong> ____________________________________________</p>
+</div>
+
+<div class="foot">
+  Manual de uso del panel de administración de ElectroHogar Costa Rica.<br />
+  Noviembre 2026.
+</div>
+
+</body>
+</html>

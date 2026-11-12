@@ -11,3 +11,6 @@ coverage/
 
 # La fuente de verdad de dependencias es bun.lock; no versionar package-lock.json.
 package-lock.json
+
+# Cotización: contiene precios acordados con el cliente. El repo es público.
+docs/cotizacion.*
