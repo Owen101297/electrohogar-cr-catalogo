@@ -328,7 +328,7 @@ export const CardStudio: React.FC<CardStudioProps> = ({
                   type="text"
                   value={profile.phone}
                   onChange={(e) => onUpdateProfile({ ...profile, phone: e.target.value })}
-                  placeholder="8888-1234"
+                  placeholder="6168-2892"
                   className="w-full text-sm pl-20 pr-3 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0F4C81] font-bold text-gray-900"
                 />
               </div>

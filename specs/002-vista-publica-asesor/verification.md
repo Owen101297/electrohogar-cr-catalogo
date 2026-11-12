@@ -54,7 +54,7 @@ Análisis del texto renderizado buscando cada término prohibido:
 | `asesor` / `Acceso del asesor` | ❌ no |
 
 - Enlaces que apuntan a `/asesor`: **0**
-- Catálogo: 12 productos, WhatsApp `+506 8888-1234` visible, búsqueda/filtros/orden operativos.
+- Catálogo: 12 productos, WhatsApp `+506 6168-2892` visible, búsqueda/filtros/orden operativos.
 - El único `%` visible es el **descuento en efectivo del producto** (`-18%`), que es información de
   venta para el cliente, no la comisión del asesor.
 

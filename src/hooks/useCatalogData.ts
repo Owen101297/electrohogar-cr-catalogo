@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AdvisorSettings, CardProfile, Product } from '../types';
 import { INITIAL_PRODUCTS } from '../data/initialProducts';
+import { DEFAULT_PHONE, migrateProfilePhone } from '../utils/profile';
 
 export const STORAGE_KEY_PROFILE = 'electrohogar_cr_profile_v2';
 export const STORAGE_KEY_PRODUCTS = 'electrohogar_cr_products_v2';
@@ -9,7 +10,7 @@ export const STORAGE_KEY_SETTINGS = 'electrohogar_cr_settings_v2';
 export const DEFAULT_PROFILE: CardProfile = {
   brandName: 'ElectroHogar Costa Rica',
   serviceTagline: 'Catálogo Oficial de Electrodomésticos & Entrega a Domicilio',
-  phone: '8888-1234',
+  phone: DEFAULT_PHONE,
   email: 'ventas@electrohogarcr.com',
   slogan: 'Los mejores precios de Gollo y EPA en la puerta de su hogar con garantía oficial',
   coverage: 'San José, Alajuela, Heredia, Cartago y envíos a todo Costa Rica',
@@ -54,9 +55,12 @@ function writeStored(key: string, value: unknown): void {
  * el catálogo que ve el cliente.
  */
 export function useCatalogData() {
-  const [profile, setProfile] = useState<CardProfile>(() =>
-    readStored(STORAGE_KEY_PROFILE, DEFAULT_PROFILE)
-  );
+  const [profile, setProfile] = useState<CardProfile>(() => {
+    const stored = readStored(STORAGE_KEY_PROFILE, DEFAULT_PROFILE);
+    // Si el teléfono guardado quedó atrás (el negocio cambió el número), se
+    // actualiza solo sin perder el resto de la información del perfil.
+    return migrateProfilePhone(stored, DEFAULT_PROFILE.phone);
+  });
 
   const [products, setProducts] = useState<Product[]>(() =>
     readStored(STORAGE_KEY_PRODUCTS, INITIAL_PRODUCTS)
